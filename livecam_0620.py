@@ -22,12 +22,12 @@ model = load_model('models/mask_detector.model')
 
 key_index = 1  #이걸로 개인키인 code와 kakaojson파일 바꿀것이다.
 
-#   0 car의 키 personal_key = "wJSrVzCXInVyHOHgW2mQywWhR8YOcwfz_lpRco4uysq37Q5JMiBt4BQUOCe6i6qCpz4BLgorDKgAAAF50ri8Cw"
-#   1 kim의 키 personal_key = "AhiGSS4MG_woW3RA7oYxvnS5WorwGa27bh30zMAD2rySrpoFhUcso1CLrfmCW8O5_IcZZwopb9QAAAF50rvCfQ"
+#   0 car의 키 personal_key = ""
+#   1 kim의 키 personal_key = ""
 #이게 개인이 로그인페이지 - 로컬호스트에서 회신받는 code
 
 
-rest_api_key = "c98fe6d1bf6316d9d186ec12d3181f6b" #앱 만들면 부여받는 api키  현재는 mask앱꺼
+rest_api_key = "" #앱 만들면 부여받는 api키  현재는 mask앱꺼
 
 personal_key = ["wJSrVzCXInVyHOHgW2mQywWhR8YOcwfz_lpRco4uysq37Q5JMiBt4BQUOCe6i6qCpz4BLgorDKgAAAF50ri8Cw", #car  0번
                 "IrTDMU5V-CLLNgImO0Xo052mryR8aOJ6O8jXh-4jBU1tI7GtfyZ49fqNOpptlGq3B5FMhwo9dVoAAAF6J6jenA", #kim  1번
