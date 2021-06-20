@@ -29,8 +29,8 @@ key_index = 1  #이걸로 개인키인 code와 kakaojson파일 바꿀것이다.
 
 rest_api_key = "" #앱 만들면 부여받는 api키  현재는 mask앱꺼
 
-personal_key = ["wJSrVzCXInVyHOHgW2mQywWhR8YOcwfz_lpRco4uysq37Q5JMiBt4BQUOCe6i6qCpz4BLgorDKgAAAF50ri8Cw", #car  0번
-                "IrTDMU5V-CLLNgImO0Xo052mryR8aOJ6O8jXh-4jBU1tI7GtfyZ49fqNOpptlGq3B5FMhwo9dVoAAAF6J6jenA", #kim  1번
+personal_key = ["", #car  0번
+                "", #kim  1번
                 ""
                 ]
 
