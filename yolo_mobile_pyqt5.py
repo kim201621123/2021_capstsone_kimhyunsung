@@ -1,4 +1,7 @@
-# 2021/11/01 01:45 201621123 김현성 작성중
+# 2021/11/01 01:45 201621123 김현성 작성중 cmd에서 실행해라
+# 나중에는 불필요한 주석들 모두 지우기
+# 2021 11 02 03:43 201621123 김현성 중간작성 완료 - 리스트에 저장까지
+# 2021 11 07 18:29 201621123 김현성 엑셀에 파일로 저장까지 완료
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 import numpy as np
@@ -7,6 +10,8 @@ import os
 import sys
 import tensorflow as tf
 import time
+import pickle
+import openpyxl
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QLabel, QHBoxLayout, QVBoxLayout ,QAction, QTableWidget,QTableWidgetItem
 from PyQt5.QtGui import *
 from PyQt5.QtGui import QIcon
@@ -26,7 +31,7 @@ facenet = cv2.dnn.readNet('models/res10_300x300_ssd_iter_140000.caffemodel','mod
 #model = load_model('models/mask_detector.model')
 
 #model = tf.keras.models.load_model("mask-no-mask.h5")
-model = load_model('dad_me_mom_e20.h5') #제일 오류율이 낮은 20으로 일단 진행함
+model = load_model('face_recognization_e40_1106.h5') #제일 오류율이 낮은 40으로 진행함
 
 YOLO_net = cv2.dnn.readNet("yolov4-custom_1030_last.weights","yolov4-custom_1030.cfg")
 #YOLO_net = cv2.dnn.readNetFromDarknet("./yolov4-custom_last.weights","./yolov4-custom.cfg")
@@ -41,15 +46,20 @@ layer_names = YOLO_net.getLayerNames()
 #output_layers = [layer_names[i[0] - 1] for i in YOLO_net.getUnconnectedOutLayers()] 잘못됨
 output_layers = [layer_names[i-1] for i in YOLO_net.getUnconnectedOutLayers()]
 
-
-
-
+# ---------------------------엑셀--------------------------------
+wb = openpyxl.Workbook()    #엑셀파일 생성
+sheet1 = wb['Sheet']
+sheet1.title = '출근인원'
+wb.save('test3.xlsx')       #엑셀파일 저장
+# --------------------------------------------------------------
 vertical_layout = QtWidgets.QVBoxLayout()
 horizontal_layout = QtWidgets.QHBoxLayout()
 
 
 class ShowVideo(QtCore.QObject):
     
+    #f = open("./log" + str(time.time()) + ".txt",'w') # 공사장 출입 로그를 txt로 저장
+    #ValueError: I/O operation on closed file. 고칠 것
     prevTime = 0
 
     formal_human = ""
@@ -82,6 +92,8 @@ class ShowVideo(QtCore.QObject):
     @QtCore.pyqtSlot()
     def startVideo(self):
         global image
+        
+        
 
         run_video = True
         while run_video:
@@ -156,7 +168,7 @@ class ShowVideo(QtCore.QObject):
 
                 face1, face2, face3 = model.predict(face_input).squeeze()# 학습 할 때 dad, me mom 순으로 학습함
 
-                #하드코딩으로 짠 거 나중에 고쳐라 - 더 좋은 방법이 있겠지 1102 02:13
+                #하드코딩으로 짠 거 나중에 고쳐라 - 더 좋은 방법이 있겠지 1102 02:13 max로 할 수 있을것같다.
                 if (face1 > face2) and (face1 > face3):
                     color = (0, 200, 55)
                     self.label_mo = 'face1 %d%%' % (face1 * 100)
@@ -170,6 +182,7 @@ class ShowVideo(QtCore.QObject):
                 if (0.9 > face1) and (0.9 > face2) and (0.9 > face3):#모르는 사람이면?
                     #침입자 경고 - 등록되지 않은 사람 - 한국어는 변환이 안되더라? 인코딩을 utf-8로 직접 줘야하나?
                     cv2.putText(img, text="unidentified", org=(x1, y2 + 45), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.8, color=color, thickness=2, lineType=cv2.LINE_AA) #텍스트 입히기
+                    continue
                 #self.picture_maksper = QLabel('%.2f%%' % (mask * 100))
                 #self.vbox.addWidget(self.picture_maksper)
             
@@ -237,80 +250,79 @@ class ShowVideo(QtCore.QObject):
                 QtGui.QImage.Format_RGB888)
                 self.VideoSignal1.emit(qt_image1)
             fps = 1/(sec)
-            print( "Time {0} " . format(sec))
-            print( "Estimated fps {0} " . format(fps))
+            #print( "Time {0} " . format(sec))
+            #print( "Estimated fps {0} " . format(fps))
             
            
             self.is_that_you(self.label_mo, self.label_yo, curTime)
             #self.createTable()
-
+            #with open("human_table.pickle","rb") as fr:
+                       #data_human_table=pickle.load(fr)
+            #print(data_human_table)
+            
             
             #horizontal_layout.addWidget(self.tableWidget)
             loop = QtCore.QEventLoop()
             QtCore.QTimer.singleShot(25, loop.quit) #25 ms
             loop.exec_()
+    #f.close()
 
         
 
-    def is_that_you(self, human, helmet, cur_time): #이거 작동 된다
-        #이제 표에 저장하는 시스템을 만들면 될듯!
-        print("실행중")
+    def is_that_you(self, human, helmet, cur_time): #작동함
+
+        
+
         if self.formal_human != human: #이전 사람과 같지 않다면
             self.formal_human = human #사람을 업데이트 하고
-            self.formal_time = cur_time #이전시간을 업데이트 한다
-            print("이전사람이 아닙니다")
+            #self.formal_time = cur_time #이전시간을 업데이트 한다
+            #print("이전사람이 아닙니다")
         
         if self.formal_human == human: #사람이 이전 사람과 같다면?
-            print("같은사람입니다")
-            if cur_time - 3 > self.formal_time:
-                print("3초간 같은 사람이었습니다.")
+            #print("같은사람입니다")
+            if cur_time - 3 > self.formal_time:     #일정시간 이상 이전 사람과 같다 판정되면
+                #print("3초간 같은 사람이었습니다.")
                 self.formal_time = cur_time
-                #if self.human_table.count(human) == 0: #human의 값이 들어있지 않다면
-                #print(self.human_table.count(human)) #제대로 작동 안하네 ㅋㅋㅋ
-                    #human값 검사하는걸 해야하는데
-                if helmet == "helmet on":
+                #if self.human_table.count(human) == 0: 
+                if helmet == "helmet on":   # 인물이 헬멧을 쓰고 있다면
+                
+
                     tmp_human = []
                     tmp_human.append(human)
                     tmp_human.append(helmet)
+                    #tmp_human.append(cur_time)
                     print(self.human_table.count(tmp_human)) #처음은 0로 나오고 다음부터는 1로 나와야 함
-                    if self.human_table.count(tmp_human) == 0: #ㅇㅋ 해결! 같은사람이 2번 들어가는 일은 없음
+                    if self.human_table.count(tmp_human) == 0: #해결! 같은사람이 2번 들어가는 일은 없음 /시간은 계속 달라져서 이렇게 하면 안될듯
+                        #f.write(human+ " " +helmet + "\n")
+                            
+                        wb = openpyxl.load_workbook('test3.xlsx')   #엑셀파일 로드
+                        sheet1 = wb.active      #시트 1
+                        
                         self.human_table_pre_count = self.human_table_pre_count + 1
-                        self.human_table.append(tmp_human)
-                    
-                        print(self.human_table)
+                        self.human_table.append(tmp_human) #리스트에 넣기       아직 시간이 들어가지 않음
+                        
+                        
+                        
+                        with open("human_table.pickle","wb") as fw:
+                            #pickle.dump(self.human_table, fw)
+                            pickle.dump(tmp_human, fw)      #시간 안들어간 채로 피클에 저장
+                        
+                        with open("human_table.pickle","rb") as fr:
+                            data_human_table=pickle.load(fr)    #피클에서 읽어옴
+                        
+                        print(tmp_human)
+                        tmp_human.append(cur_time)
+                        sheet1.append(tmp_human)    #엑셀 시트 1에 넣기
+                        wb.save('test3.xlsx')       #엑셀 수정내용 저장
+                        print(data_human_table)
                         print("리스트에 넣었습니다.") #self.human리스트에 사람과 헬멧 착용여부가 들어감
                         print("----------------------------------------")
                         print("----------------------------------------")
-                        print("----------------------------------------")
-                        print("----------------------------------------")
-                        print("----------------------------------------")
-                        print("----------------------------------------")
+                    #print(self.human_table)
+                    #print(tmp_human)
+                        
                 
 
-    def createTable(self):
-       # Create table
-        self.tableWidget = QTableWidget()
-        self.tableWidget.setRowCount(4)
-        self.tableWidget.setColumnCount(2)
-        self.tableWidget.setHorizontalHeaderLabels(['이름','헬멧'])
-        for i in range(20): #열 세로
-            for j in range(2): #행 가로 
-                self.tableWidget.setItem(i, j, QTableWidgetItem(str(i+j) + ""))
-        self.tableWidget.move(0,0)
-
-        #for i in range(20): #열 세로
-            #for j in range(2): #행 가로 
-                #self.tableWidget.setItem(i, j, QTableWidgetItem(str(i+j) + ""))
-
-
-        # table selection change
-        self.tableWidget.doubleClicked.connect(self.on_click_table)
-
-    @pyqtSlot()
-    def on_click_table(self):
-        print("\n")
-        for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
    
 class ImageViewer(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -376,8 +388,6 @@ if __name__ == '__main__':
     #btn_Picture.clicked.connect(vid.btn_Picture_clicked)
     #btn_Quit.clicked.connect(QCoreApplication.instance().quit)
 
-    
-    
 
     #vertical_layout = QtWidgets.QVBoxLayout()
     #horizontal_layout = QtWidgets.QHBoxLayout()
